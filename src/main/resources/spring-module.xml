@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+                           http://www.springframework.org/schema/beans/spring-beans.xsd
+                           http://www.springframework.org/schema/context
+                           http://www.springframework.org/schema/context/spring-context-4.3.xsd
+                           http://www.springframework.org/schema/aop
+                           http://www.springframework.org/schema/aop/spring-aop.xsd">
+    <!--扫描属性配置文件 -->
+    <context:property-placeholder
+            file-encoding="UTF-8"
+            location="classpath*:application.properties"
+            ignore-resource-not-found="true" />
+
+    <!--自动扫描组件 -->
+    <context:component-scan base-package="com.spring"/>
+
+    <!-- Using mysql datasource -->
+    <import resource="database/spring-datasource-mysql.xml" />
+    <import resource="dao/spring-department.xml" />
+    <import resource="dao/spring-customer.xml" />
+    <import resource="spring-aop.xml" />
+</beans>

@@ -1,0 +1,17 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <bean id="CsvOutputGenerator"
+          class="com.spring.inter.impl.CsvOutputGenerator"></bean>
+    <bean id="JsonOutputGenerator"
+          class="com.spring.inter.impl.JsonOutputGenerator"></bean>
+
+
+    <bean id="OutputHelper"
+          class="com.spring.service.OutputHelper">
+        <property name="outputGenerator" ref="JsonOutputGenerator"/>
+    </bean>
+
+</beans>

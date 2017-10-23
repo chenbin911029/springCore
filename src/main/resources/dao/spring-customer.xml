@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+   http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+
+    <bean id="customerDAO"
+          class="com.spring.dao.impl.JdbcCustomerDAO">
+        <property name="dataSource" ref="dataSource" />
+    </bean>
+
+    <bean id="jdbcTemplatecustomerDAO"
+          class="com.spring.dao.impl.JdbcTemplateCustomerDAO">
+        <property name="dataSource" ref="dataSource" />
+    </bean>
+
+    <bean id="jdbcCustomerDAOSupport"
+          class="com.spring.dao.impl.JdbcCustomerDAOSupport">
+        <property name="dataSource" ref="dataSource" />
+    </bean>
+
+    <!-- scope="prototype" 原型，scope="singleton" 单例-->
+    <!--
+    <bean id="customerService"
+          class="com.spring.service.CustomerService" scope="prototype" />
+     -->
+</beans>

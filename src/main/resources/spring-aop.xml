@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+                           http://www.springframework.org/schema/beans/spring-beans.xsd
+                           http://www.springframework.org/schema/context
+                           http://www.springframework.org/schema/context/spring-context-4.3.xsd
+                           http://www.springframework.org/schema/aop
+                           http://www.springframework.org/schema/aop/spring-aop.xsd">
+
+    <bean id="customerAOPService" class="com.spring.service.CustomerAOPService">
+        <property name="name" value="chenbin" />
+        <property name="url" value="https://192.168.1.151" />
+    </bean>
+
+    <bean id ="hijackBeforeMethod" class="com.spring.aop.HijackBeforeMethod" />
+    <bean id="hijackAfterMethod" class="com.spring.aop.HijackAfterMethod" />
+    <bean id="hijackThrowException" class="com.spring.aop.HijackThrowException" />
+
+    <bean id="hijackAroundMethod" class="com.spring.aop.HijackAroundMethod"/>
+
+    <!--代理对象 -->
+    <bean id="customerAOPServiceProxy" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <!--定义你想拦截的bean -->
+        <property name="target" ref="customerAOPService" />
+        <!--定义要应用这个代理对象的类 -->
+        <property name="interceptorNames">
+            <list>
+                <!--
+                <value>hijackBeforeMethod</value>
+                <value>hijackAfterMethod</value>
+                <value>hijackThrowException</value>
+                -->
+                <!--替换拦截方式 -->
+                <!--
+                <value>hijackAroundMethod</value>
+
+                <value>customerAdvisor1</value>
+
+                <value>customerRexAdvisor</value>
+                -->
+            </list>
+        </property>
+    </bean>
+
+    <!--point cut -->
+    <bean id = "customerPointcut" class="org.springframework.aop.support.NameMatchMethodPointcut">
+        <!--指定要拦截的方法名称 -->
+        <property name="mappedName" value="printName" />
+    </bean>
+
+    <!--定义advisor使通知和切入点相关联 -->
+    <bean id="customerAdvisor1" class="org.springframework.aop.support.DefaultPointcutAdvisor">
+        <property name="pointcut" ref="customerPointcut" />
+        <property name="advice" ref="hijackAroundMethod" />
+    </bean>
+
+    <!--advisor 切入点正则表达式 -->
+    <bean id = "customerRexAdvisor" class="org.springframework.aop.support.RegexpMethodPointcutAdvisor">
+        <property name="patterns">
+            <list>
+                <value>.*URL.*</value>
+            </list>
+        </property>
+        <property name="advice" ref="hijackAroundMethod" />
+    </bean>
+
+    <!--可以使用advisor 正则表达式的方式拦截所有的DAO类来支持事务 “.*DAO.*” -->
+    <!-- Spring AOP的拦截器的顺序对功能有影响。-->
+
+    <!--自动代理 -->
+    <!--根据类名称自动代理对象 -->
+    <!--
+    <bean class="org.springframework.aop.framework.autoproxy.BeanNameAutoProxyCreator">
+        <property name="beanNames">
+            <list>
+                <value>*Service</value>
+            </list>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <value>customerAdvisor1</value>
+            </list>
+        </property>
+    </bean>
+    -->
+    <!--DefaultAdvisorAutoProxyCreator -->
+    <bean class="org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator" />
+
+</beans>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
