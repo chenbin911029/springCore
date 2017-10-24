@@ -44,7 +44,7 @@
         </property>
     </bean>
 
-    <!--point cut -->
+    <!--point cut 切入点-->
     <bean id = "customerPointcut" class="org.springframework.aop.support.NameMatchMethodPointcut">
         <!--指定要拦截的方法名称 -->
         <property name="mappedName" value="printName" />

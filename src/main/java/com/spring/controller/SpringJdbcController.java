@@ -36,7 +36,8 @@ public class SpringJdbcController {
         String name = customerDAO.findCustomerNameById(1);
         System.out.println(name);
 
-        /*Customer customer1 = new Customer(25, "yiibai25",21);
+        /*
+        Customer customer1 = new Customer(25, "yiibai25",21);
         Customer customer3 = new Customer(26, "yiibai26",22);
         Customer customer2 = new Customer(37, "yiibai27",23);
 
@@ -45,6 +46,7 @@ public class SpringJdbcController {
         customers.add(customer2);
         customers.add(customer3);
 
-        customerDAO.insertBatch(customers);*/
+        customerDAO.insertBatch(customers);
+        */
     }
 }
