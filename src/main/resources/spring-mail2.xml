@@ -22,6 +22,11 @@ http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
         <property name="simpleMailMessage" ref="customeMailMessage" />
     </bean>
 
+    <bean id="eMail3" class="com.spring.service.EMailService3" >
+        <property name="mailSender" ref="mailSender"/>
+        <property name="simpleMailMessage" ref="customeMailMessage" />
+    </bean>
+
     <bean id="customeMailMessage"
           class="org.springframework.mail.SimpleMailMessage">
         <property name="from" value="13790432378@163.com" />
