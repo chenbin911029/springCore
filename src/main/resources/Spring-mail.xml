@@ -3,6 +3,7 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans
 http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
 
+    <!--
     <bean id="mailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl">
         <property name="host" value="smtp.163.com" />
         <property name="port" value="25" />
@@ -16,8 +17,10 @@ http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
             </props>
         </property>
     </bean>
+    -->
+    <bean id="mailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl" scope="prototype" />
 
-    <bean id="eMail" class="com.spring.service.EMailService" >
+    <bean id="eMail" class="com.spring.util.mail.EMailService" >
         <property name="mailSender" ref="mailSender"/>
     </bean>
 </beans>
