@@ -6,6 +6,7 @@ import org.apache.log4j.Logger;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -85,6 +86,25 @@ public class MailTransmitter implements ApplicationContextAware{
     }
 
     /**
+     * 以普通文本格式发送邮件。
+     *
+     * @param provider  邮件服务提供商名称。
+     * @param from      发送方。
+     * @param to        收件方。
+     * @param subject   主题。
+     * @param content   邮件内容。
+     * @see com.spring.util.mail.MailSenderProvider
+     */
+    public Map<String, Object> sendSimpleTEXT(
+            String provider,
+            String from,
+            String to,
+            String subject,
+            String content) {
+        return send(provider, from, new String[]{to}, null, null, subject, content);
+    }
+
+    /**
      * 发送邮件。
      * @param provider 邮件服务提供商名称
      * @param from 发送方
@@ -159,18 +179,8 @@ public class MailTransmitter implements ApplicationContextAware{
             //附件
             if (attachments != null) {
                 for (MailAttachment attachment : attachments) {
-                    org.springframework.core.io.Resource resource =
-                            applicationContext.getResource(attachment.getResource());
-                    if (attachment.getContentType() != null) {
-                        mimeMessageHelper.addAttachment(
-                                attachment.getFileName()!=null?attachment.getFileName():resource.getFilename(),
-                                resource,
-                                attachment.getContentType());
-                    } else {
-                        mimeMessageHelper.addAttachment(
-                                attachment.getFileName()!=null?attachment.getFileName():resource.getFilename(),
-                                resource);
-                    }
+                    FileSystemResource file =  new FileSystemResource(attachment.getResource());
+                    mimeMessageHelper.addAttachment(file.getFilename(),file);
                 }
             }
 

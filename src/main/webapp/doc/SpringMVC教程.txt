@@ -1,0 +1,154 @@
+2017-08-22
+1. Spring MVC DispatcherServlet 读取 xml 配置文件的原则：
+{servlet-name} ==> /WEB-INF/{servlet-name}-servlet.xml
+2. 如果你不想用 SpringMVC 的使用原则，可以重新配置 SpringMVC  DispatcherServlet 在 web.xml 文件中：
+<servlet>
+   <servlet-name>my-dispatcher-name</servlet-name>
+   <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+   <init-param>
+       <!-- override default name {servlet-name}-servlet.xml -->
+       <param-name>contextConfigLocation</param-name>
+       <param-value>/WEB-INF/springmvc-myconfig.xml</param-value>
+   </init-param>
+   <load-on-startup>1</load-on-startup>
+</servlet>
+
+7.1- HttpServletRequest & HttpServletResponse
+7.2- 控制器中的重定向  return "redirect:/hello";
+7.3- @RequestParam示例 @RequestMapping("/user")
+7.4- @PathVariable 
+7.5- @ResponseBody 
+如果您使用 @ResponseBody 注释到方法，
+spring 将尝试转换它的返回值，并自动写入到HTTP响应。在这种情况下，并不需要一个特定的视图。
+
+springMVC应用程序的流程
+1.客户端请求
+2.servlet拦截请求，处理器适配器映射到方法
+3.controller方法执行
+4.视图解析器处理物理视图，返回逻辑视图。
+
+
+2017-09-08 
+Spring4 MVC HelloWorld 注解和JavaConfig实例
+@Controller
+@RequestMapping("/")
+public class HelloWorldController {
+
+	/**
+	 *第一种方法没有声明因此任何映射，它将继承映射的映射声明是在类级别上，默认处理GET请求。
+	 */
+	@RequestMapping(method = RequestMethod.GET)
+	public String sayHello(ModelMap model) {
+		model.addAttribute("greeting", "Hello World from Spring 4 MVC");
+		return "welcome";
+	}
+
+	@RequestMapping(value = "/helloagain", method = RequestMethod.GET)
+	public String sayHelloAgain(ModelMap model) {
+		model.addAttribute("greeting", "Hello World Again, from Spring 4 MVC");
+		return "welcome";
+	}
+
+}
+
+添加配置类
+@Configuration
+@EnableWebMvc
+@ComponentScan(basePackages = "com.yiibai.springmvc")
+public class HelloWorldConfiguration {
+	@Bean
+	public ViewResolver viewResolver() {
+		InternalResourceViewResolver viewResolver = new InternalResourceViewResolver();
+		viewResolver.setViewClass(JstlView.class);
+		viewResolver.setPrefix("/WEB-INF/views/");
+		viewResolver.setSuffix(".jsp");
+
+		return viewResolver;
+	}
+}
+
+静态资源处理 web.xml
+ <!-- 对所有静态资源，使用容器进行默认处理。 -->
+  <servlet-mapping>
+    <servlet-name>default</servlet-name>
+    <url-pattern>*.css</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>default</servlet-name>
+    <url-pattern>*.jpg</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>default</servlet-name>
+    <url-pattern>*.gif</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>default</servlet-name>
+    <url-pattern>*.png</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>default</servlet-name>
+    <url-pattern>*.js</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>default</servlet-name>
+    <url-pattern>*.ico</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>default</servlet-name>
+    <url-pattern>*.htm</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>default</servlet-name>
+    <url-pattern>*.html</url-pattern>
+  </servlet-mapping>
+
+
+Spring4 MVC ContentNegotiatingViewResolver 多种输出格式实例
+Spring4 MVC REST服务使用@RestController实例
+
+
+2017-09-13
+Spring MVC Hibernate验证器
+
+Spring MVC集成Log4j
+
+2017-09-14
+Spring4 MVC RESTFul WebServices CRUD实例+RestTemplate
+Spring4 MVC+Hibernate4+MySQL+Maven使用注解集成实例
+
+签约功能，直播产品
+https://promotion.aliyun.com/ntms/act/streamplay.html?spm=5176.137251.709409.4.qTYI4v&wh_ttid=pc
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
