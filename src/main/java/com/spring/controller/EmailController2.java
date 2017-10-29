@@ -1,7 +1,6 @@
 package com.spring.controller;
 
-import com.spring.service.EMailService;
-import com.spring.service.EMailService2;
+import com.spring.util.mail.EMailService2;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 

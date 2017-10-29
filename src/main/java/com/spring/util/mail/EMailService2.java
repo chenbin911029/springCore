@@ -1,4 +1,4 @@
-package com.spring.service;
+package com.spring.util.mail;
 
 import org.springframework.mail.MailSender;
 import org.springframework.mail.SimpleMailMessage;

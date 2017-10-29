@@ -17,12 +17,12 @@ http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
         </property>
     </bean>
 
-    <bean id="eMail2" class="com.spring.service.EMailService2" >
+    <bean id="eMail2" class="com.spring.util.mail.EMailService2" >
         <property name="mailSender" ref="mailSender"/>
         <property name="simpleMailMessage" ref="customeMailMessage" />
     </bean>
 
-    <bean id="eMail3" class="com.spring.service.EMailService3" >
+    <bean id="eMail3" class="com.spring.util.mail.EMailService3" >
         <property name="mailSender" ref="mailSender"/>
         <property name="simpleMailMessage" ref="customeMailMessage" />
     </bean>
