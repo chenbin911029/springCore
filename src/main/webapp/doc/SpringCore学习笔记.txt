@@ -68,7 +68,10 @@ dataSource数据源
 	<property name="password" value="${jdbc.password}" />
 </bean>
 
-
+Java Mail
+spring boot
+spring framework
+ngix
 
 
 
