@@ -104,6 +104,10 @@ the creation of a new bean instance every time a request for that specific bean 
 @RequestScope
 @SessionScope
 
+2017-12-19
+基于注解的配置
+<context:annotation-config/>
+
 
 
 

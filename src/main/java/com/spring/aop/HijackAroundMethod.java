@@ -7,6 +7,7 @@ import java.util.Arrays;
 
 /**
  * 环绕通知
+ * 实现了MethodInterceptor
  */
 public class HijackAroundMethod implements MethodInterceptor{
     //切面，对目标方法进行增强

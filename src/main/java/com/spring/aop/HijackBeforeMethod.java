@@ -6,6 +6,7 @@ import java.lang.reflect.Method;
 
 /**
  * spring aop 前置通知
+ * 实现MethodBeforeAdvice
  */
 
 public class HijackBeforeMethod implements MethodBeforeAdvice{
