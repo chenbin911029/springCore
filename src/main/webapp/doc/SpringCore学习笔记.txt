@@ -88,8 +88,11 @@ spring boot
 spring framework
 ngix
 
-
-
+2018-02-27
+7.6.2
+从Spring 2.5开始，自动装配是获取对象的另一种选择 ApplicationContext。@Autowired
+7.8.1使用BeanPostProcessor定制bean
+例如：Hello World，BeanPostProcessor风格
 
 
 
