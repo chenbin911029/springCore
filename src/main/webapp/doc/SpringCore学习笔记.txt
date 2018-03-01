@@ -94,7 +94,22 @@ ngix
 7.8.1使用BeanPostProcessor定制bean
 例如：Hello World，BeanPostProcessor风格
 
+类名替换PropertyPlaceholderConfigurer
+<bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+    <property name="locations" value="classpath:com/foo/jdbc.properties"/>
+</bean>
 
+<bean id="dataSource" destroy-method="close"
+        class="org.apache.commons.dbcp.BasicDataSource">
+    <property name="driverClassName" value="${jdbc.driverClassName}"/>
+    <property name="url" value="${jdbc.url}"/>
+    <property name="username" value="${jdbc.username}"/>
+    <property name="password" value="${jdbc.password}"/>
+</bean>
+
+<context：property-placeholder  location = “classpath：com / foo / jdbc.properties” />
+通过contextSpring 2.5中引入的命名空间，可以使用专用配置元素配置属性覆盖
+<context：property-override  location = “classpath：override.properties” />
 
 
 
