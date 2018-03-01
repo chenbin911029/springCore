@@ -28,10 +28,10 @@ public class Main {
 
 		Car car2 = (Car) ctx.getBean("car2");
 		System.out.println(car2);
-//
-//		//4. 测试使用集合属性
-//		User user = (User) ctx.getBean("user5");
-//		System.out.println(user);
+
+		//4. 测试使用集合属性
+		User user = (User) ctx.getBean("user5");
+		System.out.println(user);
 	}
 	
 }
