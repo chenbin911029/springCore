@@ -108,23 +108,103 @@ the creation of a new bean instance every time a request for that specific bean 
 基于注解的配置
 <context:annotation-config/>
 
+2018-03-01
+@Required 注释适用于bean属性setter方法
+@Autowired You can apply the @Autowired annotation to constructors:
+@Autowired，@Inject，@Resource，和@Value注释由Spring处理
+@Qualifier
+@Primary 是可以确定一个主要候选人时使用多个实例的自动装配的有效方法。
+
+public class MovieRecommender {
+
+    @Autowired
+    @Qualifier("main")
+    private MovieCatalog movieCatalog;
+
+    // ...
+}
+
+@Resource注释，该注释在语义上定义为通过其唯一名称来标识特定目标组件，并且声明的类型与匹配过程无关。
+
+自定义注解
+@Target({ElementType.FIELD, ElementType.PARAMETER})
+@Retention(RetentionPolicy.RUNTIME)
+@Qualifier
+public @interface Offline {
+
+}
+
+public class MovieRecommender {
+
+    @Autowired
+    @Offline
+    private MovieCatalog offlineCatalog;
+
+    // ...
+}
 
 
+@Target({ElementType.FIELD, ElementType.PARAMETER})
+@Retention(RetentionPolicy.RUNTIME)
+@Qualifier
+public @interface MovieQualifier {
+
+    String genre();
+
+    Format format();
+}
+
+public enum Format {
+    VHS, DVD, BLURAY
+}
+
+public class MovieRecommender {
+
+    @Autowired
+    @MovieQualifier(format=Format.VHS, genre="Action")
+    private MovieCatalog actionVhsCatalog;
+
+    @Autowired
+    @MovieQualifier(format=Format.VHS, genre="Comedy")
+    private MovieCatalog comedyVhsCatalog;
+
+    @Autowired
+    @MovieQualifier(format=Format.DVD, genre="Action")
+    private MovieCatalog actionDvdCatalog;
+
+    @Autowired
+    @MovieQualifier(format=Format.BLURAY, genre="Comedy")
+    private MovieCatalog comedyBluRayCatalog;
+
+    // ...
+}
+
+使用反射获取注解中的赋值。
+/**
+ * 网关操作工具类
+ * @author LanBin Lai at 2017/12/20 15:33
+ */
+public class PaymentGateway {
+
+    public static  <T extends SendDTO> Map<String,Object> toMap(T t) {
+        Class clazz = t.getClass();
+        String url = "";
+        if (clazz.isAnnotationPresent(CustodyURLAnnotation.class)){
+            CustodyURLAnnotation custodyURLAnnotation = (CustodyURLAnnotation) clazz.getAnnotation(CustodyURLAnnotation.class);
+            url = custodyURLAnnotation.url();
+        }else {
+            //todo
+        }
+        if(url == null){
+            //todo
+        }
+//        url = CustodyURL.TEST_IP;
+        Map<String, Object> map = CustodyUtil.toMapAndSignForGateway(t);
+        map.put("serviceName", url);// 接口名称
+        return map;
+    }
 
 
+}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+在专属情况下，@Resource不指定明确的名称

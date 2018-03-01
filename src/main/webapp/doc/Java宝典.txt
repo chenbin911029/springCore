@@ -1,0 +1,46 @@
+JVM
+bootstrap classloader
+ExtClassLoader
+AppClassLoader
+
+2.ClassLoader加载流程
+当运行一个程序的时候，JVM启动，运行bootstrap classloader,启动类加载器加载Java核心API，
+ExtClassLoader和AppClassLoader也在此时加载，然后调用ExtClassLoader加载扩展API，
+最后AppClassLoader加载Classpath目录下定义的class,这就是一个程序的最基本加载流程。
+
+3.一个类加载过程使用了一种父类委托模式。
+第一个原因：使用父类委托模式，可以避免重复加载，当父类已经加载了该类的时候，就没必要
+子ClassLoader再加载一次。
+第二个原因：安全考虑。如果不使用这种父类委托模式，那么可以随时使用自定义的String来动态替代
+Java核心API中定义的类型，这样会存在非常大的安全隐患，而父类委托的方式可以避免这种情况，
+因为String已经在启动时被加载，所以，用户自定义类是无法加载一个自定义的ClassLoader。
+
+4.loadClass, ClassLoader的入口点，查找类，解析类。
+defineClass(final) 接受由原始字节组成的数组，并把它转换成Class对象。
+findSystemClass 从本地文件系统装入文件。
+resolveClass 可以不完全（不带解析）装入类，也可以完全地（带解析）装入类。
+findLoadedClass 充当一个缓存
+findClass 从本地文件系统使用实现的类装载器装载一个类。
+public class findClass(String name) {
+    byte[] data = loadClassData(name);
+    return defineClass(name,data,0,data.length);
+}
+
+getSystemClassLoader
+forName 和loadClass目的一样，加载class，作用上有所区别：
+Class clazz = Class.forName("something");
+或
+ClassLoader cl = Thread.currentThread().getContextClassLoader();
+Class clazz = cl.loadClass("something");
+JVM加载类：
+装载，找到相应的class文件，读入JVM
+连接，1.验证class是否符合规格；
+    2.准备，为类变量分配内存的同时，设置默认初始值；
+    3.解析（可选）根据类中的符号引用查找相应的实体，把符号引用替换成一个直接引用的过程。
+初始化。class文件初始化。
+loadCalss:加载类，但不对该类进行解析
+forName:加载类，同时进行解析和初始化。
+
+2.JVM使用字符集，Unicode characters 统一字符集
+
+5.5运算符
