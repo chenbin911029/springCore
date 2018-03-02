@@ -208,3 +208,272 @@ public class PaymentGateway {
 }
 
 在专属情况下，@Resource不指定明确的名称
+2018-03-02
+public class CachingMovieLister {
+
+    @PostConstruct
+    public void populateMovieCache() {
+        // populates the movie cache upon initialization...
+    }
+
+    @PreDestroy
+    public void clearMovieCache() {
+        // clears the movie cache upon destruction...
+    }
+}
+
+@PostConstruct 初始化回调函数
+@PreDestroy 销毁回调函数
+@Value("${custody.cert.path}") 读取配置文件中的键对应的值
+@Component 声明为组件，类路径扫描时可以扫到。
+@Repository 持久层 注释是用于满足所述角色或任何类的标记 构造型的存储库（也被称为数据访问对象或DAO）的
+@Service 服务层
+@Controller 控制层
+
+元注释也可以组合起来创建组合注释。例如，@RestController从Spring MVC的注解组成的@Controller和 @ResponseBody。
+
+自定义注解
+@Target({ElementType.TYPE, ElementType.METHOD})
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+@Scope(WebApplicationContext.SCOPE_SESSION)
+public @interface SessionScope {
+
+    /**
+     * Alias for {@link Scope#proxyMode}.
+     * <p>Defaults to {@link ScopedProxyMode#TARGET_CLASS}.
+     */
+    @AliasFor(annotation = Scope.class)
+    ScopedProxyMode proxyMode() default ScopedProxyMode.TARGET_CLASS;
+
+}
+
+//若不指定proxyMode的值，则默认使用注解中的默认值
+@SessionScope can then be used without declaring the proxyMode as follows:
+
+@Service
+@SessionScope
+public class SessionScopedService {
+    // ...
+}
+
+//或者可以重新定义proxyMode的值
+Or with an overridden value for the proxyMode as follows:
+
+@Service
+@SessionScope(proxyMode = ScopedProxyMode.INTERFACES)
+public class SessionScopedUserService implements UserService {
+    // ...
+}
+
+Java配置文件
+@Configuration
+@ComponentScan(basePackages = "org.example")
+public class AppConfig  {
+    ...
+}
+
+用xml替代表示如下：
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context.xsd">
+
+    <context:component-scan base-package="org.example"/>
+
+</beans>
+
+The use of <context:component-scan> implicitly enables the functionality of <context:annotation-config>.
+There is usually no need to include the <context:annotation-config> element when using <context:component-scan>.
+
+7.10.4使用过滤器来自定义扫描
+
+The following example shows the configuration ignoring all @Repository annotations and using "stub" repositories instead.
+@Configuration
+@ComponentScan(basePackages = "org.example",
+        includeFilters = @Filter(type = FilterType.REGEX, pattern = ".*Stub.*Repository"),
+        excludeFilters = @Filter(Repository.class))
+public class AppConfig {
+    ...
+}
+
+and the equivalent using XML
+
+<beans>
+    <context:component-scan base-package="org.example">
+        <context:include-filter type="regex"
+                expression=".*Stub.*Repository"/>
+        <context:exclude-filter type="annotation"
+                expression="org.springframework.stereotype.Repository"/>
+    </context:component-scan>
+</beans>
+
+By default, any Spring stereotype annotation (@Component, @Repository, @Service, and @Controller)
+that contains a name value will thereby provide that name to the corresponding bean definition.
+
+If such an annotation contains no name value or for any other detected component (such as those discovered by custom filters),
+the default bean name generator returns the uncapitalized non-qualified class name. For example, if the following two components were detected,
+the names would be myMovieLister and movieFinderImpl:
+
+@Service("myMovieLister")
+public class SimpleMovieLister {
+    // ...
+}
+
+@Repository
+public class MovieFinderImpl implements MovieFinder {
+    // ...
+}
+
+7.10.6命名自动检测的组件
+如果你不想依赖默认的bean命名策略，你可以提供一个自定义的bean命名策略。
+首先，实现 BeanNameGenerator 接口，并确保包含一个默认的无参数构造函数。
+然后，在配置扫描仪时提供完全合格的类名称：
+@Configuration
+@ComponentScan（basePackages =“org.example”，nameGenerator = MyNameGenerator.class）
+ public  class AppConfig {
+    ...
+}
+
+<beans>
+    <context：component-scan  base-package = “org.example”
+        name-generator = “org.example.MyNameGenerator” />
+</ beans>
+
+7.10.7为自动检测组件提供一个范围
+与一般的Spring管理组件一样，自动检测组件的默认和最常见的作用域是singleton.
+However, sometimes you need a different scope which can be specified via the @Scope annotation
+
+@Scope("prototype")
+@Repository
+public class MovieFinderImpl implements MovieFinder {
+    // ...
+}
+
+To provide a custom strategy for scope resolution rather than relying on the annotation-based approach,
+implement the ScopeMetadataResolver interface, and be sure to include a default no-arg constructor.
+Then, provide the fully-qualified class name when configuring the scanner:
+
+@Configuration
+@ComponentScan(basePackages = "org.example", scopeResolver = MyScopeResolver.class)
+public class AppConfig {
+    ...
+}
+
+<beans>
+    <context:component-scan base-package="org.example"
+            scope-resolver="org.example.MyScopeResolver" />
+</beans>
+
+7.11.2 @Named and @ManagedBean: standard equivalents to the @Component annotation
+
+7.12基于Java的容器配置
+7.12.1基本概念：@Bean和@Configuration
+该@Bean注释被用于指示一个方法实例，配置和初始化为通过Spring IoC容器进行管理的新对象。
+对于那些熟悉Spring的<beans/>XML配置的人来说，@Bean注释和<bean/>元素具有相同的作用
+
+In much the same way that Spring XML files are used as input when instantiating a ClassPathXmlApplicationContext,
+@Configuration classes may be used as input when instantiating an AnnotationConfigApplicationContext.
+This allows for completely XML-free usage of the Spring container:
+
+public static void main(String[] args) {
+    ApplicationContext ctx = new AnnotationConfigApplicationContext(AppConfig.class);
+    MyService myService = ctx.getBean(MyService.class);
+    myService.doStuff();
+}
+
+Building the container programmatically using register(Class<?>…​)
+
+public static void main(String[] args) {
+    AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext();
+    ctx.register(AppConfig.class, OtherConfig.class);
+    ctx.register(AdditionalConfig.class);
+    ctx.refresh();
+    MyService myService = ctx.getBean(MyService.class);
+    myService.doStuff();
+}
+
+Enabling component scanning with scan(String…​)
+
+@Configuration
+@ComponentScan(basePackages = "com.acme")
+public class AppConfig  {
+    ...
+}
+
+<beans>
+    <context:component-scan base-package="com.acme"/>
+</beans>
+
+public static void main(String[] args) {
+    AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext();
+    ctx.scan("com.acme");
+    ctx.refresh();
+    MyService myService = ctx.getBean(MyService.class);
+}
+
+The @Bean annotation supports specifying arbitrary initialization and destruction callback methods,
+much like Spring XML’s init-method and destroy-method attributes on the bean element:
+
+public class Foo {
+
+    public void init() {
+        // initialization logic
+    }
+}
+
+public class Bar {
+
+    public void cleanup() {
+        // destruction logic
+    }
+}
+
+@Configuration
+public class AppConfig {
+
+    @Bean(initMethod = "init")
+    public Foo foo() {
+        return new Foo();
+    }
+
+    @Bean(destroyMethod = "cleanup")
+    public Bar bar() {
+        return new Bar();
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
