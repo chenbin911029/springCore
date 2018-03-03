@@ -136,6 +136,95 @@ public class DefaultDataConfig {
 如果没有配置文件处于活动状态，dataSource则会创建上述内容;
 这可以被看作是为一个或多个bean 提供默认定义的一种方式。如果启用了任何配置文件，则默认配置文件将不适用。
 
+7.13.2 PropertySource抽象
+ApplicationContext ctx = new GenericApplicationContext();
+Environment env = ctx.getEnvironment();
+boolean containsFoo = env.containsProperty("foo");
+System.out.println("Does my environment contain the 'foo' property? " + containsFoo);
+
+7.13.3 @PropertySource
+
+@Configuration
+@PropertySource("classpath:/com/myco/app.properties")
+public class AppConfig {
+
+    @Autowired
+    Environment env;
+
+    @Bean
+    public TestBean testBean() {
+        TestBean testBean = new TestBean();
+        testBean.setName(env.getProperty("testbean.name"));
+        return testBean;
+    }
+}
+
+7.14注册一个LoadTimeWeaver
+7.15 ApplicationContext的附加功能
+为了增强BeanFactory面向框架的风格的功能，上下文包还提供以下功能：
+
+通过MessageSource界面访问i18n风格的消息。
+通过ResourceLoader界面访问资源，例如URL和文件。
+事件发布到即实现ApplicationListener接口的bean，通过使用ApplicationEventPublisher接口。
+加载多个（分层次）上下文，允许每个上下文都通过接口关注某个特定层，例如应用程序的Web层 HierarchicalBeanFactory。
+
+7.15.1 Internationalization using MessageSource
+Spring提供了两个MessageSource实现，ResourceBundleMessageSource并且 StaticMessageSource。两者都是HierarchicalMessageSource为了做嵌套消息传递而实现的。
+这StaticMessageSource是很少使用，但提供了编程方式来添加消息到源。在ResourceBundleMessageSource被示出在下面的例子：
+
+<beans>
+    <bean id="messageSource"
+            class="org.springframework.context.support.ResourceBundleMessageSource">
+        <property name="basenames">
+            <list>
+                <value>format</value>
+                <value>exceptions</value>
+                <value>windows</value>
+            </list>
+        </property>
+    </bean>
+</beans>
+
+
+public static void main(String[] args) {
+    MessageSource resources = new ClassPathXmlApplicationContext("beans.xml");
+    String message = resources.getMessage("message", null, "Default", null);
+    System.out.println(message);
+}
+
+# in format.properties
+message=Alligators rock!
+# in exceptions.properties
+argument.required=The {0} argument is required.
+
+<beans>
+
+    <!-- this MessageSource is being used in a web application -->
+    <bean id="messageSource" class="org.springframework.context.support.ResourceBundleMessageSource">
+        <property name="basename" value="exceptions"/>
+    </bean>
+
+    <!-- lets inject the above MessageSource into this POJO -->
+    <bean id="example" class="com.foo.Example">
+        <property name="messages" ref="messageSource"/>
+    </bean>
+
+</beans>
+
+7.15.3方便地访问低级资源
+7.15.4 Web应用程序的便捷ApplicationContext实例化
+<context-param>
+    <param-name> contextConfigLocation </ param-name>
+    <param-value> /WEB-INF/daoContext.xml /WEB-INF/applicationContext.xml </ param-value>
+</ context-param>
+
+<listener>
+    <listener-class> org.springframework.web.context.ContextLoaderListener </ listener-class>
+</ listener>
+
+
+
+
 
 
 
