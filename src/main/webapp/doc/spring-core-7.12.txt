@@ -1,0 +1,162 @@
+7.12.3 指定bean的作用域
+指定bean作用域
+使用@Scope注释
+从Spring 3.2开始，不再需要将CGLIB添加到类路径中，因为CGLIB类已被重新打包org.springframework.cglib并直接包含在Spring-core JAR中。
+
+7.12.5撰写基于Java的配置
+使用@Import注释
+@Configuration
+ public  class ConfigA {
+
+    @Bean
+     public A a（）{
+         return  new A（）;
+    }
+}
+
+@Configuration
+@Import（ConfigA.class）
+ public  class ConfigB {
+
+    @Bean
+     public B b（）{
+         return  new B（）;
+    }
+}
+
+@Configuration
+@ImportResource("classpath:/com/acme/properties-config.xml")
+public class AppConfig {
+
+    @Value("${jdbc.url}")
+    private String url;
+
+    @Value("${jdbc.username}")
+    private String username;
+
+    @Value("${jdbc.password}")
+    private String password;
+
+    @Bean
+    public DataSource dataSource() {
+        return new DriverManagerDataSource(url, username, password);
+    }
+}
+
+properties-config.xml
+<beans>
+    <context:property-placeholder location="classpath:/com/acme/jdbc.properties"/>
+</beans>
+
+jdbc.properties
+jdbc.url=jdbc:hsqldb:hsql://localhost/xdb
+jdbc.username=sa
+jdbc.password=1234
+
+public static void main(String[] args) {
+    ApplicationContext ctx = new AnnotationConfigApplicationContext(AppConfig.class);
+    TransferService transferService = ctx.getBean(TransferService.class);
+    // ...
+}
+
+@Profile的使用
+@ActiveProfiles("dev")  决定使用那套环境的配置信息。
+
+@Configuration
+public class AppConfig {
+
+    @Bean("dataSource")
+    @Profile("development")
+    public DataSource standaloneDataSource() {
+        return new EmbeddedDatabaseBuilder()
+            .setType(EmbeddedDatabaseType.HSQL)
+            .addScript("classpath:com/bank/config/sql/schema.sql")
+            .addScript("classpath:com/bank/config/sql/test-data.sql")
+            .build();
+    }
+
+    @Bean("dataSource")
+    @Profile("production")
+    public DataSource jndiDataSource() throws Exception {
+        Context ctx = new InitialContext();
+        return (DataSource) ctx.lookup("java:comp/env/jdbc/datasource");
+    }
+}
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:jdbc="http://www.springframework.org/schema/jdbc"
+    xmlns:jee="http://www.springframework.org/schema/jee"
+    xsi:schemaLocation="...">
+
+    <!-- other bean definitions -->
+
+    <beans profile="development">
+        <jdbc:embedded-database id="dataSource">
+            <jdbc:script location="classpath:com/bank/config/sql/schema.sql"/>
+            <jdbc:script location="classpath:com/bank/config/sql/test-data.sql"/>
+        </jdbc:embedded-database>
+    </beans>
+
+    <beans profile="production">
+        <jee:jndi-lookup id="dataSource" jndi-name="java:comp/env/jdbc/datasource"/>
+    </beans>
+</beans>
+
+激活配置文件 Activating a profile
+Now that we have updated our configuration, we still need to instruct Spring which profile is active.
+
+AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext();
+ctx.getEnvironment().setActiveProfiles("development");
+ctx.register(SomeConfig.class, StandaloneDataConfig.class, JndiDataConfig.class);
+ctx.refresh();
+
+另外，配置文件也可以通过spring.profiles.active可以通过系统环境变量，
+JVM系统属性，servlet上下文参数web.xml或JNDI中的条目指定的属性声明性地激活
+
+Note that profiles are not an "either-or" proposition; it is possible to activate multiple profiles at once.
+Programmatically, simply provide multiple profile names to the setActiveProfiles() method, which accepts String…​ varargs:
+
+ctx.getEnvironment().setActiveProfiles("profile1", "profile2");
+-Dspring.profiles.active="profile1,profile2"
+
+@Configuration
+@Profile("default")
+public class DefaultDataConfig {
+
+    @Bean
+    public DataSource dataSource() {
+        return new EmbeddedDatabaseBuilder()
+            .setType(EmbeddedDatabaseType.HSQL)
+            .addScript("classpath:com/bank/config/sql/schema.sql")
+            .build();
+    }
+}
+
+如果没有配置文件处于活动状态，dataSource则会创建上述内容;
+这可以被看作是为一个或多个bean 提供默认定义的一种方式。如果启用了任何配置文件，则默认配置文件将不适用。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
