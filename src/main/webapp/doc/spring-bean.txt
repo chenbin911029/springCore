@@ -9,3 +9,66 @@ scope("singleton") 容器初始化时就创建bean实例，容器的生命周期
         file-encoding="UTF-8"
         location="classpath*:application.properties"
         ignore-resource-not-found="true" />
+
+2018-03-04
+springEL
+
+IOC 容器中bean的生命周期方法
+<bean id="helloWorld" class="com.atguigu.spring.helloworld.HelloWorld"
+ init-method="init"
+ destroy-method="destroy">
+
+</bean>
+
+配置bean后置处理器
+实现BeanPostProcess，重写postProcessBeforeInitialization
+重写postProcessAfterInitialization
+
+spring 通过工厂方法配置bean
+实例工厂的方法
+静态工厂方法
+
+spring通过factoryBean配置bean
+自定义bean实现factoryBean接口
+
+spring通过注解的方式配置bean
+组件扫描classpath
+扫描的基类包，及其子包。
+<context-component-scan
+ base-package= ""
+ resource-pattern=""/>
+
+ resource-pattern过滤指定的路径，及类型。
+ <context:include-filter>包含
+ <context:exclude-filter>排除
+
+@Autowired 注解自动装配具有兼容类型的单个Bean属性
+默认情况下，所有使用@Autowired注解的属性都需要被设置，
+当spring找不到匹配的Bean装配属性时，会抛出异常。
+@Autowired(required=false)
+@Qualifier("")
+
+spring 泛型依赖注入
+
+springAOP，面向切面编程
+非业务方法代码，侵入性太强，维护性差。
+代码重复率太高。
+
+使用动态代理解决上面问题。
+1.方法执行日志跟踪
+2.方法执行前后事件，抛出异常事件。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,4 +1,4 @@
-package com.spring.helloworld;
+package com.spring.bean.helloworld;
 
 public class HelloWorld {
 

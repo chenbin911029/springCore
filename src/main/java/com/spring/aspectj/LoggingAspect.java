@@ -10,10 +10,16 @@ import java.util.Arrays;
 public class LoggingAspect {
 
     /**
+     * 定义一个方法，用于声明切入点表达式
+     */
+    @Pointcut("execution(* com.spring.inter.CustomerJ.addCustomer(..))")
+    public void declareJointPointExpression(){};
+
+    /**
      * 方法前
      * @param joinPoint
      */
-    @Before("execution(* com.spring.inter.CustomerJ.addCustomer(..))")
+    @Before("declareJointPointExpression()")
     public void logBefore(JoinPoint joinPoint){
         System.out.println("logBefore() is running!");
         System.out.println("hijacked : " + joinPoint.getSignature().getName());

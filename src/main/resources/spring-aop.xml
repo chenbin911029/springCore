@@ -88,6 +88,14 @@
     <!--DefaultAdvisorAutoProxyCreator -->
     <bean class="org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator" />
 
+    <bean id="loggingAspect" class="com.spring.aspectj.LoggingAspect"></bean>
+
+    <aop:config>
+        <aop:pointcut id="pointcut" expression="execution(* com.spring.inter.CustomerJ.addCustomer(..))"></aop:pointcut>
+        <aop:aspect ref="loggingAspect" order="1">
+            <aop:before method="logBefore" pointcut-ref="pointcut"></aop:before>
+        </aop:aspect>
+    </aop:config>
 </beans>
 
 

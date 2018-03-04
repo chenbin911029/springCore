@@ -1,4 +1,4 @@
-package com.spring.helloworld;
+package com.spring.bean.helloworld;
 
 import java.util.List;
 
@@ -6,9 +6,9 @@ public class User {
 
 	private String userName;
 	private List<Car> cars;
-	
+
 	private String wifeName;
-	
+
 	public String getWifeName() {
 		return wifeName;
 	}
