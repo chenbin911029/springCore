@@ -9,4 +9,258 @@
 @Aspect
 @Component
 重用切面表达式
+/**
+ * 定义一个方法，用于声明切入点表达式
+ */
+@Pointcut("execution(* com.spring.inter.CustomerJ.addCustomer(..))")
+public void declareJointPointExpression(){};
+
+2018-03-05
+动态代理：
+JDK动态代理，
+Spring AOP默认使用AOP代理的标准JDK 动态代理。这使得任何接口（或一组接口）都可以被代理。
+CGLIB代理
+Spring AOP也可以使用CGLIB代理。这对代理类而不是接口是必需的。如果业务对象不实现接口，则缺省使用CGLIB。
+Spring AOP是基于代理来实现的。
+
+11.2.1启用@AspectJ支持
+通过autoproxying我们的意思是说，如果Spring确定bean被一个或多个方面建议，
+它将自动生成该bean的代理来拦截方法调用，并确保按需要执行advice。
+By autoproxying we mean that if Spring determines that a bean is advised by one or more aspects,
+it will automatically generate a proxy for that bean to intercept method invocations and ensure that advice is executed as needed.
+
+Enabling @AspectJ Support with Java configuration
+@Configuration
+@EnableAspectJAutoProxy
+public class AppConfig {
+
+}
+
+Enabling @AspectJ Support with XML configuration
+<aop:aspectj-autoproxy/>
+
+11.2.2 Declaring an aspect
+<bean id="myAspect" class="org.xyz.NotVeryUsefulAspect">
+    <!-- configure properties of aspect here as normal -->
+</bean>
+
+package org.xyz;
+import org.aspectj.lang.annotation.Aspect;
+
+@Aspect
+public class NotVeryUsefulAspect {
+
+}
+
+或者
+package org.xyz;
+import org.aspectj.lang.annotation.Aspect;
+
+@Component
+@Aspect
+public class NotVeryUsefulAspect {
+
+}
+
+11.2.3 Declaring a pointcut
+@Pointcut("execution(* transfer(..))")// the pointcut expression
+private void anyOldTransfer() {}// the pointcut signature
+
+由于Spring的AOP框架的基于代理的本质，目标对象内的调用根本没有被拦截。
+对于JDK代理，只有代理上的公共接口方法调用才能被拦截。
+For JDK proxies, only public interface method calls on the proxy can be intercepted.
+使用CGLIB时，代理上的公共和受保护的方法调用将被拦截，
+如果需要的话，甚至包可见方法也会被拦截
+With CGLIB, public and protected method calls on the proxy will be intercepted,
+and even package-visible methods if necessary.
+
+切入点表达式重用
+@Pointcut("execution(public * *(..))")
+private void anyPublicOperation() {}
+
+@Pointcut("within(com.xyz.someapp.trading..*)")
+private void inTrading() {}
+
+@Pointcut("anyPublicOperation() && inTrading()")
+private void tradingOperation() {}
+
+Some examples of common pointcut expressions are given below.
+
+the execution of any public method:
+execution(public * *(..))
+
+the execution of any method with a name beginning with "set":
+execution(* set*(..))
+
+the execution of any method defined by the AccountService interface:
+execution(* com.xyz.service.AccountService.*(..))
+
+the execution of any method defined in the service package:
+execution(* com.xyz.service.*.*(..))
+
+the execution of any method defined in the service package or a sub-package:
+execution(* com.xyz.service..*.*(..))
+
+any join point (method execution only in Spring AOP) within the service package:
+within(com.xyz.service.*)
+
+any join point (method execution only in Spring AOP) within the service package or a sub-package:
+within(com.xyz.service..*)
+
+any join point (method execution only in Spring AOP) where the proxy implements the AccountService interface:
+this(com.xyz.service.AccountService)
+
+any join point (method execution only in Spring AOP) where the target object has an @Transactional annotation:
+@target(org.springframework.transaction.annotation.Transactional)
+
+any join point (method execution only in Spring AOP) where the declared type of the target object has an @Transactional annotation:
+@within(org.springframework.transaction.annotation.Transactional)
+
+import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.Before;
+
+@Aspect
+public class BeforeExample {
+
+    @Before("com.xyz.myapp.SystemArchitecture.dataAccessOperation()")
+    public void doAccessCheck() {
+        // ...
+    }
+
+    @AfterReturning(
+        pointcut="com.xyz.myapp.SystemArchitecture.dataAccessOperation()",
+        returning="retVal")
+    public void doAccessCheck(Object retVal) {
+        // ...
+    }
+
+    @AfterThrowing(
+        pointcut="com.xyz.myapp.SystemArchitecture.dataAccessOperation()",
+        throwing="ex")
+    public void doRecoveryActions(DataAccessException ex) {
+        // ...
+    }
+
+    @After("com.xyz.myapp.SystemArchitecture.dataAccessOperation()")
+    public void doReleaseLock() {
+        // ...
+    }
+
+    @Around("com.xyz.myapp.SystemArchitecture.businessService()")
+    public Object doBasicProfiling(ProceedingJoinPoint pjp) throws Throwable {
+        // start stopwatch
+        Object retVal = pjp.proceed();
+        // stop stopwatch
+        return retVal;
+    }
+
+}
+
+访问当前的JoinPoint
+JoinPoint接口提供了许多有用的方法，例如getArgs()（返回方法参数），getThis()（返回代理对象），getTarget()（返回目标对象），
+getSignature()（返回被建议方法的描述）和toString()（打印对被建议方法的有用描述）请参考javadocs了解全部细节。
+
+@Around("execution(List<Account> find*(..)) && " +
+        "com.xyz.myapp.SystemArchitecture.inDataAccessLayer() && " +
+        "args(accountHolderNamePattern)")
+public Object preProcessQueryPattern(ProceedingJoinPoint pjp,
+        String accountHolderNamePattern) throws Throwable {
+    String newPattern = preProcess(accountHolderNamePattern);
+    return pjp.proceed(new Object[] {newPattern});
+}
+
+xml配置声明
+<bean id = "aBean" class="spring.com.aop.LoggingAspect">
+<aop:config>
+
+    <aop:aspect id="myAspect" ref="aBean">
+
+        <aop:pointcut id="businessService"
+            expression="execution(* com.xyz.myapp.service.*.*(..)) && this(service)"/>
+
+        <aop:before pointcut-ref="businessService" method="monitor"/>
+
+        ...
+        <aop:around
+            pointcut-ref="businessService"
+            method="doBasicProfiling"/>
+    </aop:aspect>
+
+</aop:config>
+
+11.3.6 Advisors
+
+<aop:config>
+
+    <aop:pointcut id="businessService"
+        expression="execution(* com.xyz.myapp.service.*.*(..))"/>
+
+    <aop:advisor
+        pointcut-ref="businessService"
+        advice-ref="tx-advice"/>
+
+</aop:config>
+
+<tx:advice id="tx-advice">
+    <tx:attributes>
+        <tx:method name="*" propagation="REQUIRED"/>
+    </tx:attributes>
+</tx:advice>
+
+11.6代理机制
+Spring AOP使用JDK动态代理或CGLIB为给定的目标对象创建代理。（只要有选择，JDK动态代理就是首选）。
+如果要代理的目标对象实现至少一个接口，则将使用JDK动态代理。
+所有由目标类型实现的接口都将被代理。如果目标对象没有实现任何接口，则将创建一个CGLIB代理。
+
+要强制使用CGLIB代理，请将元素的proxy-target-class属性值设置<aop:config>为true：
+<aop：config  proxy-target-class = “true” >
+    <！ - 此处定义的其他bean ...  - >
+</ aop：config>
+强制使用CGLIB代理
+<aop：aspectj-autoproxy  proxy-target-class = “true” />
+
+11.6.1了解AOP代理
+public class Main {
+
+    public static void main(String[] args) {
+
+        ProxyFactory factory = new ProxyFactory(new SimplePojo());
+        factory.addInterface(Pojo.class);
+        factory.addAdvice(new RetryAdvice());
+
+        Pojo pojo = (Pojo) factory.getProxy();
+
+        // this is a method call on the proxy!
+        pojo.foo();
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
