@@ -235,6 +235,153 @@ public class Main {
     }
 }
 
+12.3.2 Advice types in Spring
+public interface MethodInterceptor extends Interceptor {
+    Object invoke(MethodInvocation invocation) throws Throwable;
+}
+
+public class DebugInterceptor implements MethodInterceptor {
+    public Object invoke(MethodInvocation invocation) throws Throwable {
+        System.out.println("Before: invocation=[" + invocation + "]");
+        Object rval = invocation.proceed();
+        System.out.println("Invocation returned");
+        return rval;
+    }
+}
+
+Before advice
+public class CountingBeforeAdvice implements MethodBeforeAdvice {
+
+    private int count;
+
+    public void before(Method m, Object[] args, Object target) throws Throwable {
+        ++count;
+    }
+
+    public int getCount() {
+        return count;
+    }
+}
+
+Throws advice
+public class ServletThrowsAdviceWithArguments implements ThrowsAdvice {
+
+    public void afterThrowing(Method m, Object[] args, Object target, ServletException ex) {
+        // Do something with all arguments
+    }
+}
+
+public static class CombinedThrowsAdvice implements ThrowsAdvice {
+
+    public void afterThrowing(RemoteException ex) throws Throwable {
+        // Do something with remote exception
+    }
+
+    public void afterThrowing(Method m, Object[] args, Object target, ServletException ex) {
+        // Do something with all arguments
+    }
+}
+
+After Returning advice
+public interface AfterReturningAdvice extends Advice {
+
+    void afterReturning(Object returnValue, Method m, Object[] args, Object target)
+            throws Throwable;
+}
+
+一些关键属性继承自org.springframework.aop.framework.ProxyConfig
+（Spring中所有AOP代理工厂的超类）。这些关键属性包括：
+
+proxyTargetClass：true如果目标类要被代理，而不是目标类的接口。
+如果此属性值设置为true，则将创建CGLIB代理（但另请参见第12.5.3节“基于JDK和CGLIB的代理”）。
+
+proxyInterfaces：String接口名称的数组。如果未提供，则将使用目标类的CGLIB代理
+
+12.5.3基于JDK和CGLIB的代理
+本节作为关于如何ProxyFactoryBean 选择为特定目标对象（即将被代理）创建基于JDK和CGLIB的代理的权威性文档。
+JDK动态代理
+CGLIB代理：
+如果要被代理的目标对象（以下简称为目标类）的类没有实现任何接口，则将创建一个基于CGLIB的代理。
+因为JDK代理是基于接口的，没有接口意味着JDK代理甚至不可能。
+
+如果目标类实现一个（或多个）接口，则创建的代理类型取决于该配置ProxyFactoryBean。
+如果该proxyTargetClass属性ProxyFactoryBean已设置为true，则将创建一个基于CGLIB的代理
+即使该proxyInterfaces属性 ProxyFactoryBean已被设置为一个或多个完全限定的接口名称，
+该proxyTargetClass属性设置为的事实true 将导致基于CGLIB的代理生效。
+
+如果该proxyInterfaces属性ProxyFactoryBean已被设置为一个或多个完全限定的接口名称，
+则将创建一个基于JDK的代理。创建的代理将实现proxyInterfaces 属性中指定的所有接口;
+如果目标类碰巧实现了比proxyInterfaces属性中指定的接口多得多的接口，
+那就很好，但这些附加接口不会由返回的代理实现。
+
+<!--目标对象 -->
+<bean id="personTarget" class="com.mycompany.PersonImpl">
+    <property name="name" value="Tony"/>
+    <property name="age" value="51"/>
+</bean>
+
+<!--通知类 -->
+<bean id="myAdvisor" class="com.mycompany.MyAdvisor">
+    <property name="someProperty" value="Custom string property value"/>
+</bean>
+
+<!--通知类 -->
+<bean id="debugInterceptor" class="org.springframework.aop.interceptor.DebugInterceptor">
+</bean>
+
+<!--代理对象 -->
+<bean id="person"
+    class="org.springframework.aop.framework.ProxyFactoryBean">
+    <!--接口数组 -->
+    <property name="proxyInterfaces" value="com.mycompany.Person"/>
+    <!--目标对象 -->
+    <property name="target" ref="personTarget"/>
+    <property name="interceptorNames">
+        <list>
+            <value>myAdvisor</value>
+            <value>debugInterceptor</value>
+        </list>
+    </property>
+</bean>
+
+如果您需要代理一个类而不是一个或多个接口，该怎么办？
+
+想象一下，在我们上面的例子中，没有Person接口：
+我们需要建议一个叫做Person没有实现任何业务接口的类。在这种情况下，
+您可以将Spring配置为使用CGLIB代理，而不是动态代理。
+只需将proxyTargetClass上面的ProxyFactoryBean上的属性设置 为true即可.
+
+CGLIB代理与动态代理之间几乎没有性能差异。
+
+
+<bean id="mySpecialService" parent="txProxyTemplate">
+    <property name="target">
+        <bean class="org.springframework.samples.MySpecialServiceImpl">
+        </bean>
+    </property>
+    <property name="transactionAttributes">
+        <props>
+            <prop key="get*">PROPAGATION_REQUIRED,readOnly</prop>
+            <prop key="find*">PROPAGATION_REQUIRED,readOnly</prop>
+            <prop key="load*">PROPAGATION_REQUIRED,readOnly</prop>
+            <prop key="store*">PROPAGATION_REQUIRED</prop>
+        </props>
+    </property>
+</bean>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
