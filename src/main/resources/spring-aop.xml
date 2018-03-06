@@ -15,7 +15,7 @@
     </bean>
 
     <bean id ="hijackBeforeMethod" class="com.spring.aop.HijackBeforeMethod" />
-    <bean id="hijackAfterMethod" class="com.spring.aop.HijackAfterMethod" />
+    <bean id="hijackAfterMethod" class="com.spring.aop.HijackAfterReturningMethod" />
     <bean id="hijackThrowException" class="com.spring.aop.HijackThrowException" />
 
     <bean id="hijackAroundMethod" class="com.spring.aop.HijackAroundMethod"/>
