@@ -254,7 +254,7 @@ public @interface SessionScope {
 @Service
 @SessionScope
 public class SessionScopedService {
-    // ...
+    // ... default "defaultValue"
 }
 
 //或者可以重新定义proxyMode的值
