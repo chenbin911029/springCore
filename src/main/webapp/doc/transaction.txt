@@ -24,6 +24,7 @@
                 isolation = Isolation.READ_COMMITTED,
                 readOnly = false,
                 timeout = 3)
+
 悲观锁：select * from table where id = #{id} for update 锁行
         update
 
@@ -35,7 +36,409 @@
 事务并发所导致的问题:
 脏读：T1读取了T2已更新但未提交的数据，若T2回滚了，则T1脏读。
 不可重复读：T1读取了一个字段，然后T2更新了该字段，
-           T1再次读取同一个字段，值就不同了。
+          T1再次读取同一个字段，值就不同了。
 幻读：T1从一个表中读取了一个字段，然后T2在该表中插入了
-新的数据，之后T1再次读取同一个表，就会多出几行。
-READ_COMMITTED 读已提交。
+     新的数据，之后T1再次读取同一个表，就会多出几行。
+
+隔离级别 ：在于处理多事务的并发问题。
+1、Serializable（序列化）：最严格的级别，事务串行执行，资源消耗最大；
+2、REPEATABLE_READ（可重复读）：保证了一个事务不会修改已经由另一个事务
+读取但未提交（回滚）的数据。避免了“脏读”，“不可重复读”的情况，但是带来了
+更多的性能损失。
+3、READ_COMMITTED（读已提交）：大多主流数据库的默认事务等级，保证了一个事务
+不会读到另一个并行事务已修改但未提交的数据，避免了“脏读”。
+4、READ_UNCOMMITTED（读未提交）：保证读取过程中不会读到非法数据。
+
+1：Dirty reads--读脏数据。也就是说，比如事务A的未提交（还依然缓存）的数据被事务B读走，
+如果事务A失败回滚，会导致事务B所读取的的数据是错误的。
+
+2：non-repeatable reads--数据不可重复读。比如事务A中两处读取数据-total-的值。
+在第一读的时候，total是100，然后事务B就把total的数据改成200，
+事务A再读一次，结果就发现，total竟然就变成200了，造成事务A数据混乱。
+
+3：phantom reads--幻象读数据，这个和non-repeatable reads相似，也是同一个事务中多次读不一致的问题。
+但是non-repeatable reads的不一致是因为他所要取的数据集被改变了（比如total的数据），
+但是phantom reads所要读的数据的不一致却不是他所要读的数据集改变，而是他的条件数据集改变。
+比如Select account.id where account.name="ppgogo*",第一次读去了6个符合条件的id，
+第二次读取的时候，由于事务b把一个帐号的名字由"dd"改成"ppgogo1"，结果取出来了7个数据。
+
+三、readOnly
+事务属性中的readOnly标志表示对应的事务应该被最优化为只读事务。
+四、Timeout
+在事务属性中还有定义“timeout”值的选项，指定事务超时为几秒。防止长时间占用数据库资源。长连接。
+
+<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+    <property name="driverClassName" value="${jdbc.driverClassName}" />
+    <property name="url" value="${jdbc.url}" />
+    <property name="username" value="${jdbc.username}" />
+    <property name="password" value="${jdbc.password}" />
+</bean>
+The related PlatformTransactionManager bean definition will then have a reference to the DataSource definition. It will look like this:
+
+<bean id="txManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+    <property name="dataSource" ref="dataSource"/>
+</bean>
+
+17.5.3 Rolling back a declarative transaction
+回滚声明式事务
+<tx：advice  id = “txAdvice”  transaction-manager = “txManager” >
+    <tx：attributes>
+    <tx：method  name = “get *”  read-only = “true”  rollback-for = “NoProductInStockException” />
+    <tx：method  name = “updateStock”  no-rollback-for = “InstrumentNotFoundException” />
+    <tx：method  name = “*”  rollback-for = “Throwable”  no-rollback-for = “InstrumentNotFoundException” />
+    <tx ：method  name = “*” />
+    </ tx：attributes>
+</ tx：advice>
+
+@Transactional
+<tx:annotation-driven/> proxy-target-class="true"
+transaction-manager
+mode
+proxy-target-class
+order
+
+@Transactional(readOnly = true)
+public class DefaultFooService implements FooService {
+
+    public Foo getFoo(String fooName) {
+        // do something
+    }
+
+    // these settings have precedence for this method
+    @Transactional(readOnly = false, propagation = Propagation.REQUIRES_NEW)
+    public void updateFoo(Foo foo) {
+        // do something
+    }
+}
+
+@Transactional Settings
+propagation
+isolation
+readOnly
+timeout
+rollbackFor
+rollbackForClassName
+noRollbackFor
+noRollbackForClassName
+
+事务传播行为
+PROPAGATION_REQUIRED:事务方法a调用事务方法b,方法b将在方法a的事务上执行。
+PROPAGATION_REQUIRES_NEW:事务方法a调用事务方法b，方法b将新建一个事务，将方法a的事务挂起。
+
+隔离级别：
+1.serializable（序列化）：最严格的隔离级别，使事务串行执行，资源消耗最大。
+2.repeatable_read（可重复读）：保证一个事务不会修改已由另一个事务读取但未提交（回滚）的数据，
+                             避免了数据的脏读，不可重复读。但带来了更大的资源损失。
+3.read_committed（读已提交）：保证一个数据不会读取另一个并行事务已修改但未提交（回滚）的数据，
+                            避免了数据的脏读。
+4.read_uncommitted（读未提交）：保证事务不会读取到非法数据。
+
+事务并行带来的问题：
+1.脏读
+2.不可重复读
+3.幻读
+
+
+2018-03-08
+18. DAO支持
+19.2使用JDBC核心类来控制基本的JDBC处理和错误处理
+JdbcTemplate
+以下是获取关系中行数的简单查询：
+int rowCount = this.jdbcTemplate.queryForObject("select count(*) from t_actor", Integer.class);
+int countOfActorsNamedJoe = this.jdbcTemplate.queryForObject(
+        "select count(*) from t_actor where first_name = ?", Integer.class, "Joe");
+
+Querying and populating a single domain object:
+
+Actor actor = this.jdbcTemplate.queryForObject(
+        "select first_name, last_name from t_actor where id = ?",
+        new Object[]{1212L},
+        new RowMapper<Actor>() {
+            public Actor mapRow(ResultSet rs, int rowNum) throws SQLException {
+                Actor actor = new Actor();
+                actor.setFirstName(rs.getString("first_name"));
+                actor.setLastName(rs.getString("last_name"));
+                return actor;
+            }
+        });
+
+Querying and populating a number of domain objects:
+
+List<Actor> actors = this.jdbcTemplate.query(
+        "select first_name, last_name from t_actor",
+        new RowMapper<Actor>() {
+            public Actor mapRow(ResultSet rs, int rowNum) throws SQLException {
+                Actor actor = new Actor();
+                actor.setFirstName(rs.getString("first_name"));
+                actor.setLastName(rs.getString("last_name"));
+                return actor;
+            }
+        });
+
+If the last two snippets of code actually existed in the same application,
+it would make sense to remove the duplication present in the two RowMapper anonymous inner classes,
+and extract them out into a single class (typically a static nested class) that can then be
+referenced by DAO methods as needed.
+For example, it may be better to write the last code snippet as follows:
+
+public List<Actor> findAllActors() {
+    return this.jdbcTemplate.query( "select first_name, last_name from t_actor", new ActorMapper());
+}
+
+private static final class ActorMapper implements RowMapper<Actor> {
+
+    public Actor mapRow(ResultSet rs, int rowNum) throws SQLException {
+        Actor actor = new Actor();
+        actor.setFirstName(rs.getString("first_name"));
+        actor.setLastName(rs.getString("last_name"));
+        return actor;
+    }
+}
+
+Updating (INSERT/UPDATE/DELETE) with JdbcTemplate
+this.jdbcTemplate.update(
+        "insert into t_actor (first_name, last_name) values (?, ?)",
+        "Leonor", "Watling");
+
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xsi:schemaLocation="
+        http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context.xsd">
+
+    <bean id="corporateEventDao" class="com.example.JdbcCorporateEventDao">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+
+    <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+        <property name="driverClassName" value="${jdbc.driverClassName}"/>
+        <property name="url" value="${jdbc.url}"/>
+        <property name="username" value="${jdbc.username}"/>
+        <property name="password" value="${jdbc.password}"/>
+    </bean>
+
+    <context:property-placeholder location="jdbc.properties"/>
+
+</beans>
+
+19.2.2 NamedParameterJdbcTemplate
+
+private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
+
+public void setDataSource(DataSource dataSource) {
+    this.namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(dataSource);
+}
+
+public int countOfActorsByFirstName(String firstName) {
+    String sql = "select count(*) from T_ACTOR where first_name = :first_name";
+    SqlParameterSource namedParameters = new MapSqlParameterSource("first_name", firstName);
+    return this.namedParameterJdbcTemplate.queryForObject(sql, namedParameters, Integer.class);
+}
+
+在使用Spring的JDBC层时，您可以从JNDI获取数据源，或者使用第三方提供的连接池实现来配置自己的数据源。
+流行的实现是Apache Jakarta Commons DBCP和C3P0。
+DriverManagerDataSource
+
+19.4.2 Batch operations with a List of objects
+
+public class JdbcActorDao implements ActorDao {
+
+    private NamedParameterTemplate namedParameterJdbcTemplate;
+
+    public void setDataSource(DataSource dataSource) {
+        this.namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(dataSource);
+    }
+
+    public int[] batchUpdate(List<Actor> actors) {
+        return this.namedParameterJdbcTemplate.batchUpdate(
+                "update t_actor set first_name = :firstName, last_name = :lastName where id = :id",
+                SqlParameterSourceUtils.createBatch(actors.toArray()));
+    }
+
+    // ... additional methods
+}
+
+//使用jdbcTemplate批量更新
+public class JdbcActorDao implements ActorDao {
+
+    private JdbcTemplate jdbcTemplate;
+
+    public void setDataSource(DataSource dataSource) {
+        this.jdbcTemplate = new JdbcTemplate(dataSource);
+    }
+
+    public int[] batchUpdate(final List<Actor> actors) {
+        List<Object[]> batch = new ArrayList<Object[]>();
+        for (Actor actor : actors) {
+            Object[] values = new Object[] {
+                    actor.getFirstName(), actor.getLastName(), actor.getId()};
+            batch.add(values);
+        }
+        return this.jdbcTemplate.batchUpdate(
+                "update t_actor set first_name = ?, last_name = ? where id = ?",
+                batch);
+    }
+
+    // ... additional methods
+}
+
+19.4.3 Batch operations with multiple batches
+分多个批次进行批量操作
+public class JdbcActorDao implements ActorDao {
+    private JdbcTemplate jdbcTemplate;
+    public void setDataSource(DataSource dataSource) {
+        this.jdbcTemplate = new JdbcTemplate(dataSource);
+    }
+
+    public int[][] batchUpdate(final Collection<Actor> actors) {
+        int[][] updateCounts = jdbcTemplate.batchUpdate(
+                "update t_actor set first_name = ?, last_name = ? where id = ?",
+                actors,
+                100,
+                new ParameterizedPreparedStatementSetter<Actor>() {
+                    public void setValues(PreparedStatement ps, Actor argument) throws SQLException {
+                        ps.setString(1, argument.getFirstName());
+                        ps.setString(2, argument.getLastName());
+                        ps.setLong(3, argument.getId().longValue());
+                    }
+                });
+        return updateCounts;
+    }
+
+    // ... additional methods
+}
+
+//存储过程
+CREATE PROCEDURE read_actor (
+    IN in_id INTEGER,
+    OUT out_first_name VARCHAR(100),
+    OUT out_last_name VARCHAR(100),
+    OUT out_birth_date DATE)
+BEGIN
+    SELECT first_name, last_name, birth_date
+    INTO out_first_name, out_last_name, out_birth_date
+    FROM t_actor where id = in_id;
+END;
+
+//函数
+CREATE FUNCTION get_actor_name (in_id INTEGER)
+RETURNS VARCHAR(200) READS SQL DATA
+BEGIN
+    DECLARE out_name VARCHAR(200);
+    SELECT concat(first_name, ' ', last_name)
+        INTO out_name
+        FROM t_actor where id = in_id;
+    RETURN out_name;
+END;
+
+Handling BLOB and CLOB objects
+These large objects are called BLOBs (Binary Large OBject)
+for binary data and CLOBs (Character Large OBject) for character data.
+
+19.7.3传入IN子句的值列表
+select * from T_ACTOR where (id, last_name) in ((1, 'Johnson'), (2, 'Harrop'\))
+传递许多值时要小心。JDBC标准并不保证您可以为in表达式列表使用超过100个值。
+各种数据库超过这个数字，但它们通常对允许多少个值有一个硬性限制。Oracle的限制是1000。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
