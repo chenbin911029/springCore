@@ -57,7 +57,7 @@ springAOP+AspectJ注解实例
 @Around 结合以上这三个通知
 
 <!--aspectj自动代理 -->
-<aop:aspectj-autoproxy />
+<aop:aspectj-autoproxy proxy-target-class="true"/> //强制使用CGLIB代理
 
 dataSource数据源
 <bean id="dataSource"
